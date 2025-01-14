@@ -1,4 +1,4 @@
 flask
-openai
+revChatGPT
 tiktoken
-xmlto 
+xmltodict
