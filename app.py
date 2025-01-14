@@ -44,7 +44,8 @@ def index():
 
     # msg = answer(reply_info['Content'])
 
-    msg = "okokok"
+    user_content = reply_info['Content']
+    msg = f"你刚刚发送了【{user_content}】"
 
     return pack_msg(reply_info, msg)
 
