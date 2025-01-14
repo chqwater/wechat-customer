@@ -29,7 +29,7 @@ def pack_msg(reply_info: dict, msg: str) -> str:
 def index():
     if request.method == 'GET':
         # 用于验证
-        return request.args.get('echostr', type=int, default='')
+        return request.args.get('echostr')
 
     def answer(ask: str) -> str:
         response = chatbot.ask(ask, temperature=0.5)
