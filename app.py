@@ -28,7 +28,7 @@ def pack_msg(reply_info: dict, msg: str) -> str:
 @app.route("/wechat", methods=['GET', 'POST'])
 def index():
     if request.method == 'GET':
-        # 用于验证
+        # For verifying the server in official account platform
         return request.args.get('echostr')
 
     def answer(ask: str) -> str:
@@ -42,9 +42,13 @@ def index():
 
     reply_info = parse_msg(request.data)
 
-    msg = answer(reply_info['Content'])
+    # msg = answer(reply_info['Content'])
+
+    msg = "okokok"
 
     return pack_msg(reply_info, msg)
+
+
 
 
 if __name__ == '__main__':
