@@ -339,6 +339,7 @@ class Prompt:
     ) -> None:
 
         response = response.replace("<|endoftext|>", "")
+        response = response.replace("<|im_end|>", "")
         self.add_to_chat_history(
             user
             + ": "
