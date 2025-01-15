@@ -42,11 +42,17 @@ def index():
         return request.args.get('echostr')
 
     def answer(ask: str) -> str:
+        # 添加调试信息
+        print(f"Current API key: {chatbot.api_key[:6]}...{chatbot.api_key[-4:]}")  # 只显示部分密钥
+        print(f"Environment API key: {os.environ.get('OPENAI_API_KEY')[:6]}...{os.environ.get('OPENAI_API_KEY')[-4:]}")
+        
         response = chatbot.ask(ask, temperature=0.5)
         print("Ask: " + ask)
         response_text = response["choices"][0]["message"]["content"]
-        print("ChatGPT: " + response_text)
-        return response_text
+        
+        # 在返回的消息中包含 API key 信息（仅用于调试）
+        debug_info = f"\nAPI key: {chatbot.api_key[:6]}...{chatbot.api_key[-4:]}"
+        return response_text + debug_info
 
     if not request.data:
         return '', 403
