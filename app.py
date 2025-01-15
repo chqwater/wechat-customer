@@ -34,8 +34,9 @@ def index():
     def answer(ask: str) -> str:
         response = chatbot.ask(ask, temperature=0.5)
         print("Ask: " + ask)
-        print("ChatGPT: " + response["choices"][0]["text"])
-        return response["choices"][0]["text"]
+        response_text = response["choices"][0]["message"]["content"]
+        print("ChatGPT: " + response_text)
+        return response_text
 
     if not request.data:
         return '', 403

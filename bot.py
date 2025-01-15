@@ -61,12 +61,11 @@ class Chatbot:
         """
         Get the completion function
         """
-        return openai.Completion.create(
-            engine=self.engine,
-            prompt=prompt,
+        return openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}],
             temperature=temperature,
             max_tokens=get_max_tokens(prompt),
-            stop=["\n\n\n"],
             stream=stream,
         )
 
@@ -81,16 +80,10 @@ class Chatbot:
             raise Exception("ChatGPT API returned no choices")
         if len(completion["choices"]) == 0:
             raise Exception("ChatGPT API returned no choices")
-        if completion["choices"][0].get("text") is None:
-            raise Exception("ChatGPT API returned no text")
-        completion["choices"][0]["text"] = remove_suffix(
-            completion["choices"][0]["text"],
-            "<|im_end|>",
-        )
-        # Add to chat history
+        response_text = completion["choices"][0]["message"]["content"]
         self.prompt.add_to_history(
             user_request,
-            completion["choices"][0]["text"],
+            response_text,
             user=user,
         )
         if conversation_id is not None:
