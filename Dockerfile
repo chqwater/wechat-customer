@@ -15,7 +15,6 @@ COPY . .
 
 # 设置环境变量
 ENV GPT_ENGINE=text-davinci-003
-ENV OPENAI_API_KEY=""
 
 # 暴露端口
 EXPOSE 80
