@@ -6,9 +6,19 @@ from flask import Flask, request
 
 from bot import Chatbot
 
-os.environ['GPT_ENGINE'] = 'text-davinci-003'
-
 app = Flask(__name__)
+
+# 初始化 chatbot，不需要传入 api_key，让它从环境变量获取
+try:
+    chatbot = Chatbot()
+    # 验证是否成功初始化
+    if chatbot.api_key:
+        print("Chatbot successfully initialized with API key")
+    else:
+        print("Warning: Chatbot initialized without API key")
+except ValueError as e:
+    print(f"Error initializing chatbot: {e}")
+    # 这里可以添加适当的错误处理
 
 def parse_msg(xml: bytes) -> dict:
     return xmltodict.parse(xml).get('xml')
@@ -55,5 +65,7 @@ def confirmation_session(content: str) -> bool:
     return None
 
 if __name__ == '__main__':
-    chatbot = Chatbot(api_key='')
+    # 启动前验证环境变量
+    if not os.environ.get("OPENAI_API_KEY"):
+        print("Warning: OPENAI_API_KEY environment variable is not set")
     app.run(host='0.0.0.0', port=80, debug=True)
