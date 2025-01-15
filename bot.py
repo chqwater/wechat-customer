@@ -49,11 +49,10 @@ class Chatbot:
         """
         self.api_key = os.environ.get("OPENAI_API_KEY") or api_key
         if not self.api_key:
-            raise ValueError("No API key provided. Set OPENAI_API_KEY environment variable or pass api_key parameter")
+            raise ValueError("环境变量中未找到API KEY")
         
         print(f"Using API key starting with: {self.api_key[:6]}...")
-        
-        # 创建 OpenAI 客户端
+
         self.client = openai.OpenAI(
             api_key=self.api_key,
             http_client=httpx.Client(
@@ -83,12 +82,12 @@ class Chatbot:
                 max_tokens=get_max_tokens(prompt),
                 stream=stream,
             )
-            # 直接返回响应对象
+
             return response
         
         except Exception as e:
-            print(f"OpenAI API 错误: {str(e)}")  # 添加错误日志
-            raise  # 向上抛出异常，让上层处理
+            print(f"OpenAI API 错误: {str(e)}")
+            raise
 
     def _process_completion(
         self,
@@ -101,17 +100,14 @@ class Chatbot:
         处理 API 返回的结果
         """
         try:
-            # 获取响应文本
             response_text = completion.choices[0].message.content
-            
-            # 添加到历史记录
+
             self.prompt.add_to_history(
                 user_request,
                 response_text,
                 user=user,
             )
-            
-            # 保存对话
+
             if conversation_id is not None:
                 self.save_conversation(conversation_id)
             
@@ -155,7 +151,6 @@ class Chatbot:
             yield response["choices"][0]["text"]
             full_response += response["choices"][0]["text"]
 
-        # Add to chat history
         self.prompt.add_to_history(user_request, full_response, user)
         if conversation_id is not None:
             self.save_conversation(conversation_id)
@@ -315,15 +310,16 @@ class Prompt:
 
     def __init__(self, buffer: int = None) -> None:
         """
-        Initialize prompt with base prompt
+        初始提示词，可以在这里进行提示词工程，投喂预设话术，训练chatgpt为ai客服
         """
         self.base_prompt = (
             os.environ.get("CUSTOM_BASE_PROMPT")
-            or "You are ChatGPT, a large language model trained by OpenAI. Respond conversationally. Do not answer as the user. Current date: "
-            + str(date.today())
+            or "你是CE柬埔寨快递公司的微信公众号AI中文客服，我们会为你提供一些针对不同问题种类的话术，请你分析用户问题，并匹配相似类型的回复"
             + "\n\n"
-            + "User: Hello\n"
-            + "ChatGPT: Hello! How can I help you today? <|im_end|>\n\n\n"
+            + "用户: 你好\n"
+            + "AI客服: 你好，请问能帮到您什么？\n\n\n"
+            + "用户: 转人工\n"
+            + "AI客服: 好的，我们的人工客服会尽快回复您。\n\n\n"
         )
         # Track chat history
         self.chat_history: list = []
@@ -331,7 +327,7 @@ class Prompt:
 
     def add_to_chat_history(self, chat: str) -> None:
         """
-        Add chat to chat history for next prompt
+        加入到对话历史
         """
         self.chat_history.append(chat)
 

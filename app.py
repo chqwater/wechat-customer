@@ -8,17 +8,15 @@ from bot import Chatbot
 
 app = Flask(__name__)
 
-# 初始化 chatbot，不需要传入 api_key，让它从环境变量获取
 try:
     chatbot = Chatbot()
-    # 验证是否成功初始化
+
     if chatbot.api_key:
         print("Chatbot successfully initialized with API key")
     else:
         print("Warning: Chatbot initialized without API key")
 except ValueError as e:
     print(f"Error initializing chatbot: {e}")
-    # 这里可以添加适当的错误处理
 
 def parse_msg(xml: bytes) -> dict:
     return xmltodict.parse(xml).get('xml')
@@ -42,17 +40,14 @@ def index():
         return request.args.get('echostr')
 
     def answer(ask: str) -> str:
-        # 添加调试信息
-        print(f"Current API key: {chatbot.api_key[:6]}...{chatbot.api_key[-4:]}")  # 只显示部分密钥
+        print(f"Current API key: {chatbot.api_key[:6]}...{chatbot.api_key[-4:]}")
         print(f"Environment API key: {os.environ.get('OPENAI_API_KEY')[:6]}...{os.environ.get('OPENAI_API_KEY')[-4:]}")
         
         response = chatbot.ask(ask, temperature=0.5)
         print("Ask: " + ask)
         response_text = response["choices"][0]["message"]["content"]
-        
-        # 在返回的消息中包含 API key 信息（仅用于调试）
-        debug_info = f"\nAPI key: {chatbot.api_key[:6]}...{chatbot.api_key[-4:]}"
-        return response_text + debug_info
+
+        return response_text
 
     if not request.data:
         return '', 403
@@ -71,7 +66,6 @@ def confirmation_session(content: str) -> bool:
     return None
 
 if __name__ == '__main__':
-    # 启动前验证环境变量
     if not os.environ.get("OPENAI_API_KEY"):
         print("Warning: OPENAI_API_KEY environment variable is not set")
     app.run(host='0.0.0.0', port=80, debug=True)
