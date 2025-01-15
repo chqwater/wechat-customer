@@ -304,9 +304,6 @@ class AsyncChatbot(Chatbot):
 
 
 class Prompt:
-    """
-    Prompt class with methods to construct prompt
-    """
 
     def __init__(self, buffer: int = None) -> None:
         """
@@ -320,8 +317,10 @@ class Prompt:
             + "AI客服: 你好，请问能帮到您什么？\n\n\n"
             + "用户: 转人工\n"
             + "AI客服: 好的，我们的人工客服会尽快回复您。\n\n\n"
+            + "用户: 快递丢失了怎么办\n"
+            + "AI客服: 请联系我们的工作人员，电话为：123987\n\n\n"
         )
-        # Track chat history
+
         self.chat_history: list = []
         self.buffer = buffer
 
@@ -337,9 +336,7 @@ class Prompt:
         response: str,
         user: str = "User",
     ) -> None:
-        """
-        Add request/response to chat history for next prompt
-        """
+
         self.add_to_chat_history(
             user
             + ": "
@@ -373,7 +370,6 @@ class Prompt:
             + new_prompt
             + "\nChatGPT:"
         )
-        # Check if prompt over 4000*4 characters
         if self.buffer is not None:
             max_tokens = 4000 - self.buffer
         else:

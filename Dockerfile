@@ -9,6 +9,8 @@ COPY requirements.txt .
 
 # 安装依赖
 RUN pip install -r requirements.txt
+RUN openai migrate
+
 
 # 复制应用代码
 COPY . .
