@@ -267,6 +267,7 @@ class AsyncChatbot(Chatbot):
             temperature=temperature,
             max_tokens=get_max_tokens(prompt),
             stream=stream,
+            disallowed_special=(),
         )
         return response
 
@@ -337,6 +338,7 @@ class Prompt:
         user: str = "User",
     ) -> None:
 
+        response = response.replace("<|endoftext|>", "")
         self.add_to_chat_history(
             user
             + ": "
