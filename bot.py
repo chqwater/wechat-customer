@@ -9,6 +9,7 @@ from datetime import date
 
 import openai
 import tiktoken
+import httpx
 
 ENGINE = os.environ.get("GPT_ENGINE") or "text-chat-davinci-002-20221122"
 
@@ -52,8 +53,13 @@ class Chatbot:
         
         print(f"Using API key starting with: {self.api_key[:6]}...")
         
-        openai.api_key = self.api_key
-        openai.proxy = proxy or os.environ.get("OPENAI_API_PROXY")
+        # 创建 OpenAI 客户端
+        self.client = openai.OpenAI(
+            api_key=self.api_key,
+            http_client=httpx.Client(
+                proxies=proxy or os.environ.get("OPENAI_API_PROXY")
+            ) if proxy or os.environ.get("OPENAI_API_PROXY") else None
+        )
         
         self.conversations = Conversation()
         self.prompt = Prompt(buffer=buffer)
@@ -70,7 +76,7 @@ class Chatbot:
         """
         try:
             messages = [{"role": "user", "content": prompt}]
-            response = openai.ChatCompletion.create(
+            response = self.client.chat.completions.create(
                 model=self.engine,
                 messages=messages,
                 temperature=temperature,
@@ -78,7 +84,7 @@ class Chatbot:
                 stream=stream,
             )
             return response
-        except openai.error.RateLimitError:
+        except openai.RateLimitError:
             return {
                 "choices": [{
                     "message": {
@@ -102,13 +108,10 @@ class Chatbot:
         conversation_id: str = None,
         user: str = "User",
     ) -> dict:
-        # 检查是否是错误处理返回的字典
         if isinstance(completion, dict) and "choices" in completion:
             response_text = completion["choices"][0]["message"]["content"]
         else:
-            # 正常的API响应对象
-            if not completion.choices:
-                raise Exception("ChatGPT API returned no choices")
+            # 处理新版 API 的响应对象
             response_text = completion.choices[0].message.content
         
         self.prompt.add_to_history(
@@ -234,7 +237,8 @@ class AsyncChatbot(Chatbot):
         Get the completion function using the new async OpenAI API
         """
         messages = [{"role": "user", "content": prompt}]
-        response = await openai.ChatCompletion.acreate(
+        async_client = openai.AsyncOpenAI(api_key=self.api_key)
+        response = await async_client.chat.completions.create(
             model=self.engine,
             messages=messages,
             temperature=temperature,
