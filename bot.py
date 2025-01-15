@@ -69,15 +69,16 @@ class Chatbot:
         Get the completion function using the new OpenAI API
         """
         try:
-            client = openai.OpenAI(api_key=openai.api_key)
-            return client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[{"role": "user", "content": prompt}],
+            messages = [{"role": "user", "content": prompt}]
+            response = openai.ChatCompletion.create(
+                model=self.engine,
+                messages=messages,
                 temperature=temperature,
                 max_tokens=get_max_tokens(prompt),
                 stream=stream,
             )
-        except openai.RateLimitError:
+            return response
+        except openai.error.RateLimitError:
             return {
                 "choices": [{
                     "message": {
@@ -232,14 +233,15 @@ class AsyncChatbot(Chatbot):
         """
         Get the completion function using the new async OpenAI API
         """
-        client = openai.AsyncOpenAI(api_key=openai.api_key)
-        return await client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": prompt}],
+        messages = [{"role": "user", "content": prompt}]
+        response = await openai.ChatCompletion.acreate(
+            model=self.engine,
+            messages=messages,
             temperature=temperature,
             max_tokens=get_max_tokens(prompt),
             stream=stream,
         )
+        return response
 
     async def ask(
         self,
