@@ -38,7 +38,7 @@ class Chatbot:
 
     def __init__(
         self,
-        api_key: str,
+        api_key: str = None,
         buffer: int = None,
         engine: str = None,
         proxy: str = None,
@@ -46,11 +46,18 @@ class Chatbot:
         """
         Initialize Chatbot with API key (from https://platform.openai.com/account/api-keys)
         """
-        openai.api_key = api_key or os.environ.get("OPENAI_API_KEY")
+        self.api_key = os.environ.get("OPENAI_API_KEY") or api_key
+        if not self.api_key:
+            raise ValueError("No API key provided. Set OPENAI_API_KEY environment variable or pass api_key parameter")
+        
+        print(f"Using API key starting with: {self.api_key[:6]}...")
+        
+        openai.api_key = self.api_key
         openai.proxy = proxy or os.environ.get("OPENAI_API_PROXY")
+        
         self.conversations = Conversation()
         self.prompt = Prompt(buffer=buffer)
-        self.engine = engine or ENGINE
+        self.engine = engine or os.environ.get("GPT_ENGINE") or "gpt-3.5-turbo"
 
     def _get_completion(
         self,

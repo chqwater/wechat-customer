@@ -51,7 +51,8 @@ def index():
     return pack_msg(reply_info, msg)
 
 
-
+def confirmation_session(content: str) -> bool:
+    return None
 
 if __name__ == '__main__':
     chatbot = Chatbot(api_key='')
