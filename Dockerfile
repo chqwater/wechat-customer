@@ -14,7 +14,6 @@ RUN pip install -r requirements.txt
 COPY . .
 
 # 设置环境变量
-ENV GPT_ENGINE=text-davinci-003
 ARG OPENAI_API_KEY
 ENV OPENAI_API_KEY=$OPENAI_API_KEY
 
