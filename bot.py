@@ -84,7 +84,8 @@ class Chatbot:
                 stream=stream,
             )
             return response
-        except openai.RateLimitError:
+        except openai.RateLimitError as e:
+            print(f"Rate limit error: {str(e)}")
             return {
                 "choices": [{
                     "message": {
@@ -92,7 +93,17 @@ class Chatbot:
                     }
                 }]
             }
+        except openai.APIError as e:
+            print(f"API error: {str(e)}")
+            return {
+                "choices": [{
+                    "message": {
+                        "content": f"OpenAI API 错误：{str(e)}"
+                    }
+                }]
+            }
         except Exception as e:
+            print(f"Unexpected error: {str(e)}")
             return {
                 "choices": [{
                     "message": {
