@@ -83,56 +83,55 @@ class Chatbot:
                 max_tokens=get_max_tokens(prompt),
                 stream=stream,
             )
+            # 直接返回响应对象
             return response
-        except openai.RateLimitError as e:
-            print(f"Rate limit error: {str(e)}")
-            return {
-                "choices": [{
-                    "message": {
-                        "content": "抱歉，API 使用量已超出限制，请稍后再试或联系管理员。"
-                    }
-                }]
-            }
-        except openai.APIError as e:
-            print(f"API error: {str(e)}")
-            return {
-                "choices": [{
-                    "message": {
-                        "content": f"OpenAI API 错误：{str(e)}"
-                    }
-                }]
-            }
+        
         except Exception as e:
-            print(f"Unexpected error: {str(e)}")
-            return {
-                "choices": [{
-                    "message": {
-                        "content": f"发生错误：{str(e)}"
-                    }
-                }]
-            }
+            print(f"OpenAI API 错误: {str(e)}")  # 添加错误日志
+            raise  # 向上抛出异常，让上层处理
 
     def _process_completion(
         self,
         user_request: str,
-        completion: dict,
+        completion,
         conversation_id: str = None,
         user: str = "User",
     ) -> dict:
-        if isinstance(completion, dict) and "choices" in completion:
-            response_text = completion["choices"][0]["message"]["content"]
-        else:
-            # 处理新版 API 的响应对象
+        """
+        处理 API 返回的结果
+        """
+        try:
+            # 获取响应文本
             response_text = completion.choices[0].message.content
+            
+            # 添加到历史记录
+            self.prompt.add_to_history(
+                user_request,
+                response_text,
+                user=user,
+            )
+            
+            # 保存对话
+            if conversation_id is not None:
+                self.save_conversation(conversation_id)
+            
+            return {
+                "choices": [{
+                    "message": {
+                        "content": response_text
+                    }
+                }]
+            }
         
-        self.prompt.add_to_history(
-            user_request,
-            response_text,
-            user=user,
-        )
-        if conversation_id is not None:
-            self.save_conversation(conversation_id)
-        return {"choices": [{"message": {"content": response_text}}]}
+        except Exception as e:
+            print(f"处理响应时发生错误: {str(e)}")
+            return {
+                "choices": [{
+                    "message": {
+                        "content": f"处理响应时发生错误：{str(e)}"
+                    }
+                }]
+            }
 
     def _process_completion_stream(
         self,
@@ -171,13 +170,31 @@ class Chatbot:
         """
         Send a request to ChatGPT and return the response
         """
-        if conversation_id is not None:
-            self.load_conversation(conversation_id)
-        completion = self._get_completion(
-            self.prompt.construct_prompt(user_request, user=user),
-            temperature,
-        )
-        return self._process_completion(user_request, completion, user=user)
+        try:
+            if conversation_id is not None:
+                self.load_conversation(conversation_id)
+            
+            completion = self._get_completion(
+                self.prompt.construct_prompt(user_request, user=user),
+                temperature,
+            )
+            
+            return self._process_completion(
+                user_request, 
+                completion, 
+                conversation_id=conversation_id,
+                user=user
+            )
+        
+        except Exception as e:
+            print(f"请求处理发生错误: {str(e)}")
+            return {
+                "choices": [{
+                    "message": {
+                        "content": f"发生错误：{str(e)}"
+                    }
+                }]
+            }
 
     def ask_stream(
         self,
