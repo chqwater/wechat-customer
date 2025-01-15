@@ -2,3 +2,4 @@ flask
 revChatGPT
 tiktoken
 xmltodict
+openai>=1.0.0

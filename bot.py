@@ -59,9 +59,10 @@ class Chatbot:
         stream: bool = False,
     ):
         """
-        Get the completion function
+        Get the completion function using the new OpenAI API
         """
-        return openai.ChatCompletion.create(
+        client = openai.OpenAI(api_key=openai.api_key)
+        return client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[{"role": "user", "content": prompt}],
             temperature=temperature,
@@ -76,11 +77,12 @@ class Chatbot:
         conversation_id: str = None,
         user: str = "User",
     ) -> dict:
-        if completion.get("choices") is None:
+        if not completion.choices:
             raise Exception("ChatGPT API returned no choices")
-        if len(completion["choices"]) == 0:
-            raise Exception("ChatGPT API returned no choices")
-        response_text = completion["choices"][0]["message"]["content"]
+        
+        # 新版API中获取响应内容的方式
+        response_text = completion.choices[0].message.content
+        
         self.prompt.add_to_history(
             user_request,
             response_text,
@@ -88,7 +90,7 @@ class Chatbot:
         )
         if conversation_id is not None:
             self.save_conversation(conversation_id)
-        return completion
+        return {"choices": [{"message": {"content": response_text}}]}
 
     def _process_completion_stream(
         self,
@@ -201,14 +203,14 @@ class AsyncChatbot(Chatbot):
         stream: bool = False,
     ):
         """
-        Get the completion function
+        Get the completion function using the new async OpenAI API
         """
-        return await openai.Completion.acreate(
-            engine=self.engine,
-            prompt=prompt,
+        client = openai.AsyncOpenAI(api_key=openai.api_key)
+        return await client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}],
             temperature=temperature,
             max_tokens=get_max_tokens(prompt),
-            stop=["\n\n\n"],
             stream=stream,
         )
 
