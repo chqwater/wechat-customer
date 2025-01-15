@@ -61,14 +61,31 @@ class Chatbot:
         """
         Get the completion function using the new OpenAI API
         """
-        client = openai.OpenAI(api_key=openai.api_key)
-        return client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=temperature,
-            max_tokens=get_max_tokens(prompt),
-            stream=stream,
-        )
+        try:
+            client = openai.OpenAI(api_key=openai.api_key)
+            return client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=temperature,
+                max_tokens=get_max_tokens(prompt),
+                stream=stream,
+            )
+        except openai.RateLimitError:
+            return {
+                "choices": [{
+                    "message": {
+                        "content": "抱歉，API 使用量已超出限制，请稍后再试或联系管理员。"
+                    }
+                }]
+            }
+        except Exception as e:
+            return {
+                "choices": [{
+                    "message": {
+                        "content": f"发生错误：{str(e)}"
+                    }
+                }]
+            }
 
     def _process_completion(
         self,
