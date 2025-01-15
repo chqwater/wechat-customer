@@ -94,11 +94,14 @@ class Chatbot:
         conversation_id: str = None,
         user: str = "User",
     ) -> dict:
-        if not completion.choices:
-            raise Exception("ChatGPT API returned no choices")
-        
-        # 新版API中获取响应内容的方式
-        response_text = completion.choices[0].message.content
+        # 检查是否是错误处理返回的字典
+        if isinstance(completion, dict) and "choices" in completion:
+            response_text = completion["choices"][0]["message"]["content"]
+        else:
+            # 正常的API响应对象
+            if not completion.choices:
+                raise Exception("ChatGPT API returned no choices")
+            response_text = completion.choices[0].message.content
         
         self.prompt.add_to_history(
             user_request,
