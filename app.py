@@ -39,7 +39,7 @@ def index():
     if request.method == 'GET':
         # For verifying the server in official account platform
         return request.args.get('echostr')
-
+    user_id = parse_msg(request.data).get('FromUserName')
     def answer(ask: str) -> str:
         print(f"Current API key: {chatbot.api_key[:6]}...{chatbot.api_key[-4:]}")
         print(f"Environment API key: {os.environ.get('OPENAI_API_KEY')[:6]}...{os.environ.get('OPENAI_API_KEY')[-4:]}")
@@ -55,7 +55,7 @@ def index():
 
     reply_info = parse_msg(request.data)
 
-    user_content = reply_info['Content']
+    user_content = f'{user_id}:' + reply_info['Content']
     #msg = f"你刚刚发送了【{user_content}】"
 
     msg = answer(user_content)
