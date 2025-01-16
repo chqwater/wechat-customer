@@ -353,7 +353,7 @@ class Prompt:
             + "\n\n\n"
             + "ChatGPT: "
             + response
-            + "<|im_end|>\n",
+            + "\n",
         )
 
     def history(self, custom_history: list = None) -> str:
