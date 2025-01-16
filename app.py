@@ -56,9 +56,9 @@ def index():
     reply_info = parse_msg(request.data)
 
     user_content = f'{user_id}:' + reply_info['Content']
-    msg = f"【{user_content}】"
+    #msg = f"你刚刚发送了【{user_content}】"
 
-    #msg = answer(user_content)
+    msg = answer(user_content)
 
     return pack_msg(reply_info, msg)
 
