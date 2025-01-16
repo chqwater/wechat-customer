@@ -3,6 +3,7 @@ import time
 
 import xmltodict
 from flask import Flask, request
+import requests
 
 from bot import Chatbot
 
@@ -64,6 +65,39 @@ def index():
 
 def confirmation_session(content: str) -> bool:
     return None
+
+def get_access_token(appid: str, secret: str) -> str:
+    global access_token_cache
+    current_time = time.time()
+
+    if access_token_cache["token"] and access_token_cache["expire_at"] > current_time:
+        return access_token_cache["token"]
+
+    url = f"https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={appid}&secret={secret}"
+    response = requests.get(url)
+    data = response.json()
+
+    if "access_token" in data:
+        access_token_cache["token"] = data["access_token"]
+        access_token_cache["expires_at"] = current_time + data["expires_in"] - 60
+        return access_token_cache["token"]
+    else:
+        raise ValueError(f"Failed to get access_token: {data}")
+
+
+def send_single_msg(to_user: str, content: str):
+    access_token = get_access_token()
+    url = f'https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token={access_token}'
+    payload = {
+        'touser': to_user,
+        'msgtype': 'text',
+        'text': {
+            'content': content
+        }
+    }
+    headers = {'Content-Type': 'application/json'}
+    response = requests.post(url, json=payload, headers=headers)
+
 
 if __name__ == '__main__':
     if not os.environ.get("OPENAI_API_KEY"):
