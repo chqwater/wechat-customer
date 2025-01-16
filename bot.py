@@ -11,7 +11,7 @@ import openai
 import tiktoken
 import httpx
 
-ENGINE = os.environ.get("GPT_ENGINE") or "gpt-3.5-turbo"
+ENGINE = os.environ.get("GPT_ENGINE") or "gpt-4o-mini"
 
 ENCODER = tiktoken.get_encoding("gpt2")
 
